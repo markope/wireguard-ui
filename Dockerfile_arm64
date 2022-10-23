@@ -1,5 +1,6 @@
 FROM ubuntu
 # FROM linuxserver/wireguard:latest
+# FROM ngoduykhanh/wireguard-ui
 
 RUN apt-get update && apt-get install -y wget
 
