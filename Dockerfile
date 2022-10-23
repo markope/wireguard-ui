@@ -3,7 +3,7 @@ FROM golang:1.17-alpine3.16 as builder
 LABEL maintainer="Khanh Ngo <k@ndk.name"
 
 ARG TARGETOS=linux
-ARG TARGETARCH=amd64
+ARG TARGETARCH=arm64
 
 ARG BUILD_DEPENDENCIES="npm \
     yarn"
@@ -71,7 +71,7 @@ RUN mkdir -p db
 # Copy binary files
 COPY --from=builder --chown=wgui:wgui /build/wg-ui /app
 
-RUN chmod +x wg-ui
+RUN chmod +x wg-ui && mkdir /etc/wireguard
 
 EXPOSE 5000/tcp
 HEALTHCHECK CMD ["wget","--output-document=-","--quiet","--tries=1","http://127.0.0.1:5000/_health"]
