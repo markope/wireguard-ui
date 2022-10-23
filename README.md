@@ -1,137 +1,91 @@
-# Example App
+![](https://github.com/ngoduykhanh/wireguard-ui/workflows/wireguard-ui%20build%20release/badge.svg)
 
-This example app demonstrates how to publish data from a device to be received and stored later in a data pod.
+# wireguard-ui
 
-You can use this app as a template to build your own IoT app.
-The app is written in Python, but you can also use any other programming language.
+A web user interface to manage your WireGuard setup.
 
-# How To Develop
+## Screenshot
+![wireguard-ui 0.3.7](https://user-images.githubusercontent.com/37958026/177041280-e3e7ca16-d4cf-4e95-9920-68af15e780dd.png)
 
-## Use Docker
-Each app must have a Dockerfile called "Dockerfile" in the top folder. The Dockerfile describes the system setup your application code will run in.
-Basically you use the Dockerfile to create a custom linux configuration starting from a standard base image like ubuntu or alpine linux.
-Alternatively or additionally you can add Dockerfiles for specific target system architectures "Dockerfile_armv7" or "Dockerfile_arm64" if you want to make your app run on armv7 (Raspberry pi) or arm64 (Jetson) systems.
-The "Dockerfile" will be used if there is no specific dockerfile present for that device's system architecture.
-See [here](https://docs.docker.com/engine/reference/builder/) for more information on dockerfiles.
+## Features
+- Friendly UI
+- Authentication
+- Manage extra client's information (name, email, etc)
+- Retrieve configs using QR code / file
 
-## Editing Code
-To edit the source code of your app you can click the "Develop" button and use the web code editor. The code editor is a personal development environment in the cloud that only you have ever access to. It is based on the popular [VS-Code](https://code.visualstudio.com/) code editor from Microsoft.
+## Run WireGuard-UI
 
-Code editing is based on the git workflow which is the industry standard way for creating maintainable and auditable code for collaborative development. This means every change you make to the code is only present in your personal environment until you "commit" and "push" your code to the master branch of your application.
-
-You can build and run your code **on a remote device (!)** during development using the side menu buttons. You need the "Develop" privilege on the device to use it in the code editor development context. This effectively enables you to classify devices as "production" devices by revoking all development privileges of all users on this device.
-
-Using the terminal in the side menu you can log into a running app container directly on a device which is often useful for debugging on a device. The terminal from the side menu is not the same as the terminal accessible via the code editor's menu:
-
-- The **side-menu-terminal** logs into the app container on a device.
-- The **code-editor-terminal** logs into your development container in the cloud that runs the code editor and contains your clone of the git repository of the app.
-
-> The side-menu-terminal used to access a remote device does not use ssh and needs no open ports on the device.
+Default username and password are `admin`.
 
 
-### Interface with GitHub/GitLab/Bitbucket and your local editor
-<style>
-    img {
-        margin: 12px;
+## Environment Variables
 
-    }
-</style>
-<img src="https://storage.googleapis.com/reswarm-images/GitHub-Mark-64px.png"/>
-<img src="https://storage.googleapis.com/reswarm-images/gitlab.png" width="65"/>
-<img src="https://storage.googleapis.com/reswarm-images/bitbucket.png" width="70"/>
+| Variable                    | Description                                                                                                     |
+|-----------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `SESSION_SECRET`            | Used to encrypt the session cookies. Set this to a random value.                                                |
+| `WGUI_USERNAME`             | The username for the login page. (default `admin`)                                                              |
+| `WGUI_PASSWORD`             | The password for the user on the login page. Will be hashed automatically. (default `admin`)                    |
+| `WGUI_PASSWORD_HASH`        | The password hash for the user on the login page. (alternative to `WGUI_PASSWORD`)                              |
+| `WGUI_ENDPOINT_ADDRESS`     | The default endpoint address used in global settings. (default is your public IP address)                       |
+| `WGUI_DNS`                  | The default DNS servers (comma-separated-list) used in the global settings. (default `1.1.1.1`)                 |
+| `WGUI_MTU`                  | The default MTU used in global settings. (default `1450`)                                                       |
+| `WGUI_PERSISTENT_KEEPALIVE` | The default persistent keepalive for WireGuard in global settings. (default `15`)                               |
+| `WGUI_FORWARD_MARK`         | The default WireGuard forward mark. (default `0xca6c`)                                                          |
+| `WGUI_CONFIG_FILE_PATH`     | The default WireGuard config file path used in global settings. (default `/etc/wireguard/wg0.conf`)             |
+| `BASE_PATH`                 | Set this variable if you run wireguard-ui under a subpath of your reverse proxy virtual host (e.g. /wireguard)) |
 
-Each app on the platform has a central Git repository that is used as the common code point for all developers of this app. By default this central Git repository is managed within the Record Evolution platform.
-When you create an app you can choose to use another service instead. Currently the Git services from GitHub, GitLab and Bitbucket are supported.
-For external Git repositories you need a "Personal Access Token" from the service to authenticate yourself. You can add these tokens in your Record Evolution User Profile.
+### Defaults for server configuration
 
-> In the application settings you can move an internal repository to one of those external services at any time later.
+These environment variables are used to control the default server settings used when initializing the database.
 
-This way you can use your own local editor setup and push to your repo at GitHub. The code can then easily be run and debugged on actual devices using the Record Evolution Platform. You can also directly build and push your GitHub app code into the IoT App Store for deployment on swarms of devices.
+| Variable                          | Description                                                                                                              |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| `WGUI_SERVER_INTERFACE_ADDRESSES` | The default interface addresses (comma-separated-list) for the WireGuard server configuration. (default `10.252.1.0/24`) |
+| `WGUI_SERVER_LISTEN_PORT`         | The default server listen port. (default `51820`)                                                                        |
+| `WGUI_SERVER_POST_UP_SCRIPT`      | The default server post-up script.                                                                                       |
+| `WGUI_SERVER_POST_DOWN_SCRIPT`    | The default server post-down script.                                                                                     |
 
-## Application Parameters
-As an app developer you sometimes want to expose parameters to the user of the app.
-E.g. you build an app to record data from a temperature sensor and you want the user of the app to be able to change the recording frequency. In general Application Parameters can be used for simple apps where you want to give the user an easy control over some aspects of the app.
+### Defaults for new clients
 
-To expose application paramters to the user, you can add a file "env-template.yml" to your top folder.
-The contents of that file will be rendered as a nice form for users and will be accessible at the settings icon of the running app on the device or device group. The default values you specify in the env-template.yml will be used when running the app during development.
+These environment variables are used to set the defaults used in `New Client` dialog.
 
-<img src="https://storage.googleapis.com/reswarm-images/prod/rendered_template.png" height="300" style="margin-left: auto; margin-right: auto; margin-bottom: 16px; display: block;">
+| Variable                                    | Description                                                                                                      |
+|---------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `WGUI_DEFAULT_CLIENT_ALLOWED_IPS`           | Comma-separated-list of CIDRs for the `Allowed IPs` field. (default `0.0.0.0/0`)                                 |
+| `WGUI_DEFAULT_CLIENT_EXTRA_ALLOWED_IPS`     | Comma-separated-list of CIDRs for the `Extra Allowed IPs` field. (default empty)                                 |
+| `WGUI_DEFAULT_CLIENT_USE_SERVER_DNS`        | Boolean value [`0`, `f`, `F`, `false`, `False`, `FALSE`, `1`, `t`, `T`, `true`, `True`, `TRUE`] (default `true`) |
+| `WGUI_DEFAULT_CLIENT_ENABLE_AFTER_CREATION` | Boolean value [`0`, `f`, `F`, `false`, `False`, `FALSE`, `1`, `t`, `T`, `true`, `True`, `TRUE`] (default `true`) |
 
-The user provided parameters will be available to your application as linux environment variables.
+### Email configuration
 
-There are some standard environment variables that are always available in your application:
+To use custom `wg.conf` template set the `WG_CONF_TEMPLATE` environment variable to a path to such file. Make sure `wireguard-ui` will be able to work with it - use [default template](templates/wg.conf) for reference.
 
-* **DEVICE_NAME**            current device's name (could change)
-* **DEVICE_SERIAL_NUMBER**   the unique identifier of the device (is immutable)
-* **SWARM_KEY**              the unique identifier of the device's swarm (could change)
+In order to sent the wireguard configuration to clients via email, set the following environment variables:
 
-With these environment variables your app can detect which device it is running on.
+- using SendGrid API
 
-> Using Application Parameters the user can specify paramters for all devices in a group at once.
-> Parameters can be provided by users even if the app is not running or a device is offline.
+```
+SENDGRID_API_KEY: Your sendgrid api key
+EMAIL_FROM_ADDRESS: the email address you registered on sendgrid
+EMAIL_FROM_NAME: the sender's email address
+```
 
-**Examples** where Application Parameters should be used are apps that run on many devices and where you want to specify a common target S3 bucket to push the data to. Or if you want to change model parameters for an AI-App on all devices at once.
+- using SMTP
 
-## Application User Interface
-What kind of user interface you want to provide for your app depends very much on the type of app you are developing. Some apps don't need any user input, some just require a simple form (see above) and some require a sophisticated web UI.
+```
+SMTP_HOSTNAME: The SMTP ip address or hostname
+SMTP_PORT: the SMTP port
+SMTP_USERNAME: the SMTP username to authenticate
+SMTP_PASSWORD: the SMTP user password
+SMTP_AUTH_TYPE: the authentication type. Possible values: PLAIN, LOGIN, NONE
+EMAIL_FROM_ADDRESS: the sender's email address
+EMAIL_FROM_NAME: the sender's name
+```
 
-If you want to provide a custom user interface to the users of your app, you have to include a web server into your application that serves a web frontend to users.
-Since the application will run on the users edge devices, which might be street lamps or machines in a production line, the web interface will not be accessible through the internet.
-To enable external access you can add a "port-template.yml" file to your top folder and specify the ports on which your web server is serving the user frontend.
+## License
+MIT. See [LICENSE](https://github.com/ngoduykhanh/wireguard-ui/blob/master/LICENSE).
 
-<img src="https://storage.googleapis.com/reswarm-images/prod/rendered_port_template.png" height="200" style="margin-left: auto; margin-right: auto; margin-bottom: 16px; display: block;">
+## Support
+If you like the project and want to support it, you can *buy me a coffee* ☕
 
-The user can then enable and disable web access at the settings icon of the running app on a device to access the front end of your app on that device.
-(Enabling access effectively creates a secure web-tunnel that makes the user interface on the edge device accessible from the internet.)
-Only users with the NETWORK privilege on a device can enable external web access.
-
-> Although a web interface can provide very sophisticated functionality to users, settings the user makes in an interface like that are always only valid for the single device the app runs on.
-
-You can however use Application Parameters and an Application User Interface at the same time.
-
-**Examples** where this kind of interface is applicable are robot training software or complex sensor hardware configuration software.
-
-## The App Store
-If you want to release the app to your users, you can publish the app to the central App Store.
-
-To publish the app you need to go to the "Releases" tab of the app's settings page in the app studio.
-There you need to choose a device for the publishing process. After you entered a version string in the version field and press "Publish"
-the device builds and then publishes that app to the private App Store. The device you choose for the publishing process determines for which architecture the app will be published.
-So if you choose an amd64 device, then the app will be available as an amd64 app in the App Store.
-You can publish your app with multiple devices of different architectures to make the app available for multiple architectures at the same time.
-Make sure to use the same version string for all architecture versions of your app to bundle them under one app version.
-Now the app can be installed by users on their devices, but only if they have the "Use IoT App" privilege for that app.
-
-> Your app is not automatically visible in the public App Store for arbitrary users.
-
-You can setup user privileges for your app in the "Privileges" tab of the app's settings page in the app studio.
-There you can also invite other developers to collaborate with you on the app.
-
-To make your app available in the globally public App Store you need to enable the App Store switch on the app's settings page in the app studio.
-
-## Data volumes
-If your app saves data on the device this data will normally not be retained accross app or device restarts.
-To make your data persistant accross restarts, there are two folders you can use:
-
-* **/data** A folder that is private to your app. Other apps can not access it's content.
-* **/shared** A folder that is shared by all apps on the device.
-
-## Receive and Store Data
-
-To receive and store the published data from this app running on a device you have to:
-
-1. Create a data pod
-2. Make sure the pod owner has "Data Access" privileges on the device's swarm. (see swarm settings)
-3. Create and activate a source inside this data pod that refers to the swarm of the device the app runs on.
-4. Create and activate a raw table inside the data pod to collect the data from the message topic the data is pushed on.
-
-To publish data from your app to a data pod we provided a python library [reswarm-py](https://pypi.org/project/reswarm/) and a [node.js](https://www.npmjs.com/package/reswarm) library reswarm-js. Please refer to the given links for further documentations.
-
-## Hardware access
-Your app may want to interact with hardware like sensors that are attached to your device.
-These devices are mounted into the /dev directory of your application.
-
-# LICENSE
-### MIT
-Copyright (c) 2021 Record Evolution GmbH
-See license file on the source code
+<a href="https://www.buymeacoffee.com/khanhngo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
